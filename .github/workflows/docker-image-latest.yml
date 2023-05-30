@@ -66,7 +66,8 @@ jobs:
       -
         name: Checkout
         uses: actions/checkout@v3
-      - name: Docker meta
+      -
+        name: Docker meta
         id: meta
         uses: docker/metadata-action@v4
         with:
@@ -94,6 +95,7 @@ jobs:
           context: .
           file: Dockerfile
           platforms: ${{ env.DOCKER_IMAGE_PLATFORMS }}
+          tags: ${{ steps.meta.outputs.tags }}
           no-cache: false
           pull: true
           push: true
