@@ -26,6 +26,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v3
+    - name: Docker meta
+      id: meta
+      uses: docker/metadata-action@v4
+      with:
+        images: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
     - name: "Login into registry as user: env.DOCKER_HUB_USER"
@@ -41,6 +46,7 @@ jobs:
         context: .
         file: Dockerfile
         platforms: ${{ matrix.docker_image.platform }}
+        outputs: type=image,name=${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true
         tags: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}:latest
         no-cache: false
         push: false
@@ -50,6 +56,19 @@ jobs:
         context: .
         file: Dockerfile
         platforms: ${{ matrix.docker_image.platform }}
+        outputs: type=image,name=${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true,push=true
         tags: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}:latest
         no-cache: false
         push: true
+    - name: Export digest
+      run: |
+        mkdir -p /tmp/digests
+        digest="${{ steps.build.outputs.digest }}"
+        touch "/tmp/digests/${digest#sha256:}"
+    - name: Upload digest
+      uses: actions/upload-artifact@v3
+      with:
+        name: digests
+        path: /tmp/digests/*
+        if-no-files-found: error
+        retention-days: 1
