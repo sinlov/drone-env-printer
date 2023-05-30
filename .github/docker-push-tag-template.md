@@ -1,7 +1,7 @@
 ## need `New repository secret`
 
 - file `docker-image-tag.yml`
-- `ACCESS_TOKEN` from [hub.docker](https://hub.docker.com/settings/security)
+- `DOCKERHUB_TOKEN` from [hub.docker](https://hub.docker.com/settings/security)
 - `IMAGE_BUILD_OS_NAME` like `alpine` and let `Dockerfile` under this folder
 
 ## base template
@@ -31,7 +31,7 @@ jobs:
       run: |
         docker build . --file Dockerfile --tag $IMAGE_NAME
     - name: "Login into registry as user: $DOCKER_HUB_USER"
-      run: echo "${{ secrets.ACCESS_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
     - name: Push image
       run: |
         # now pwd
@@ -82,7 +82,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: "Login into registry as user: $DOCKER_HUB_USER"
-      run: echo "${{ secrets.ACCESS_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
     - name: Docker buildx ready
       run: |
         DOCKER_CLI_EXPERIMENTAL=enabled

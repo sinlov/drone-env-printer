@@ -1,7 +1,7 @@
 ## need `New repository secret`
 
 - file `docker-image-latest.yml`
-- `ACCESS_TOKEN` from [hub.docker](https://hub.docker.com/settings/security)
+- `DOCKERHUB_TOKEN` from [hub.docker](https://hub.docker.com/settings/security)
 
 ## base template
 
@@ -30,7 +30,7 @@ jobs:
       run: |
         docker build . --file Dockerfile --tag $IMAGE_NAME
     - name: "Login into registry as user: $DOCKER_HUB_USER"
-      run: echo "${{ secrets.ACCESS_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
     - name: Push image
       run: |
         # parse docker image id
@@ -91,7 +91,7 @@ jobs:
       uses: docker/login-action@v2
       with:
         username: ${{ env.DOCKER_HUB_USER }}
-        password: ${{ secrets.ACCESS_TOKEN }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v2
     - name: Build dry
@@ -137,7 +137,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: "Login into registry as user: $DOCKER_HUB_USER"
-      run: echo "${{ secrets.ACCESS_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
+      run: echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u $DOCKER_HUB_USER --password-stdin
     - name: Docker buildx ready
       run: |
         DOCKER_CLI_EXPERIMENTAL=enabled
