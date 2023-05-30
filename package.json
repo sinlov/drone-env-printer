@@ -1,6 +1,5 @@
 {
   "name": "drone-env-printer",
-  "version": "0.1.2",
-  "dependencies": {
-  }
+  "version": "1.0.0",
+  "dependencies": {}
 }
