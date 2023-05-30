@@ -7,6 +7,7 @@ import (
 	"math/rand"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 )
 
@@ -49,25 +50,31 @@ func (p *Plugin) Exec() error {
 	if p.Config.PaddingLeftMax < 24 {
 		p.Config.PaddingLeftMax = 24
 	}
+
+	var sb strings.Builder
+	_, _ = fmt.Fprint(&sb, "-> just print basic env:\n")
 	paddingMax := strconv.Itoa(p.Config.PaddingLeftMax)
-	log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneStageMachine, p.Drone.Stage.Machine)
-	log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneStageOs, p.Drone.Stage.Os)
-	log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneStageArch, p.Drone.Stage.Arch)
-	log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneRepoName, p.Drone.Repo.ShortName)
-	log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneRepoOwner, p.Drone.Repo.OwnerName)
-	log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneRepo, p.Drone.Repo.FullName)
+	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageMachine, p.Drone.Stage.Machine))
+	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageOs, p.Drone.Stage.Os))
+	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageArch, p.Drone.Stage.Arch))
+	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoName, p.Drone.Repo.ShortName))
+	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoOwner, p.Drone.Repo.OwnerName))
+	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepo, p.Drone.Repo.FullName))
 	if p.Drone.Commit.Branch != "" {
-		log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneCommitBranch, p.Drone.Commit.Branch)
+		_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitBranch, p.Drone.Commit.Branch))
 	}
 	if p.Drone.Build.Tag != "" {
-		log.Printf("%-"+paddingMax+"s %s", drone_info.EnvDroneTag, p.Drone.Build.Tag)
+		_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneTag, p.Drone.Build.Tag))
 	}
 
 	if len(p.Config.EnvPrintKeys) > 0 {
+		_, _ = fmt.Fprint(&sb, "-> start print keys env:\n")
 		for _, key := range p.Config.EnvPrintKeys {
-			log.Printf("%-"+paddingMax+"s %s", key, os.Getenv(key))
+			_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", key, os.Getenv(key)))
 		}
+		_, _ = fmt.Fprint(&sb, "-> end print keys env\n")
 	}
+	log.Printf("%s", sb.String())
 
 	//log.Printf("=> %s version %s end", p.Name, p.Version)
 
