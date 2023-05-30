@@ -10,7 +10,7 @@ env:
   # name of docker image
   DOCKER_HUB_USER: sinlov
   IMAGE_NAME: drone-env-printer
-  DOCKER_IMAGE_PLATFORMS: linux/amd64,linux/386,linux/arm64/v8,linux/arm/v7
+#  DOCKER_IMAGE_PLATFORMS: linux/amd64,linux/386,linux/arm64/v8,linux/arm/v7
 
 jobs:
   build:
@@ -64,7 +64,7 @@ jobs:
     - name: Export digest
       run: |
         mkdir -p /tmp/digests
-        digest="${{ steps.build.outputs.digest }}"
+        digest="${{ steps.docker_push.outputs.digest }}"
         touch "/tmp/digests/${digest#sha256:}"
     - name: Upload digest
       uses: actions/upload-artifact@v3
