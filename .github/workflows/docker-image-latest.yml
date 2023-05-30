@@ -54,6 +54,8 @@ jobs:
           context: .
           file: Dockerfile
           platforms: ${{ matrix.docker_image.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
           no-cache: false
           pull: true
           push: false
@@ -95,6 +97,7 @@ jobs:
           context: .
           file: Dockerfile
           platforms: ${{ env.DOCKER_IMAGE_PLATFORMS }}
+          labels: ${{ steps.meta.outputs.labels }}
           tags: ${{ steps.meta.outputs.tags }}
           no-cache: false
           pull: true
