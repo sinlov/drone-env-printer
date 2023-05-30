@@ -3,7 +3,119 @@
 - file `docker-image-latest.yml`
 - `DOCKERHUB_TOKEN` from [hub.docker](https://hub.docker.com/settings/security)
 
-## base template
+## buildx template
+
+- file `docker-image-latest.yml`
+
+```yml
+name: Docker Image buildx latest
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  # name of docker image
+  DOCKER_HUB_USER: sinlov
+  IMAGE_NAME: drone-env-printer
+  DOCKER_IMAGE_PLATFORMS: linux/amd64,linux/386,linux/arm64,linux/arm/v7
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest ]
+        docker_image:
+          - platform: linux/amd64
+          - platform: linux/386
+          - platform: linux/arm64
+          - platform: linux/arm/v7
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # set latest tag for main branch https://github.com/docker/metadata-action#latest-tag
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: "Login into registry as user: env.DOCKER_HUB_USER"
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build dry
+        uses: docker/build-push-action@v4 # https://github.com/docker/build-push-action
+        with:
+          context: .
+          file: Dockerfile
+          platforms: ${{ matrix.docker_image.platform }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          no-cache: false
+          pull: true
+          push: false
+
+  push:
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v3
+      -
+        name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}
+          tags: |
+            # set latest tag for main branch https://github.com/docker/metadata-action#latest-tag
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+      -
+        name: "Login into registry as user: env.DOCKER_HUB_USER"
+        uses: docker/login-action@v2
+        with:
+          username: ${{ env.DOCKER_HUB_USER }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+      -
+        name: Build and push
+        id: docker_push
+        uses: docker/build-push-action@v4 # https://github.com/docker/build-push-action
+        with:
+          context: .
+          file: Dockerfile
+          platforms: ${{ env.DOCKER_IMAGE_PLATFORMS }}
+          labels: ${{ steps.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          no-cache: false
+          pull: true
+          push: true
+
+```
+
+## base template by shell
 
 - just only support OS/ARCH `linux/amd64`
 
@@ -51,67 +163,6 @@ jobs:
 
         # docker push
         docker push $IMAGE_ID:$VERSION
-
-```
-
-## buildx template 
-
-```yml
-name: Docker Image buildx latest
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-env:
-  # name of docker image
-  DOCKER_HUB_USER: sinlov
-  IMAGE_NAME: drone-env-printer
-  DOCKER_IMAGE_PLATFORMS: linux/amd64,linux/386,linux/arm64/v8,linux/arm/v7
-
-jobs:
-  build:
-    strategy:
-      matrix:
-        os: [ ubuntu-latest ]
-        docker_image:
-          - platform: linux/amd64
-          - platform: linux/386
-          - platform: linux/arm64
-          - platform: linux/arm/v7
-    runs-on: ${{ matrix.os }}
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v2
-    - name: "Login into registry as user: env.DOCKER_HUB_USER"
-      uses: docker/login-action@v2
-      with:
-        username: ${{ env.DOCKER_HUB_USER }}
-        password: ${{ secrets.DOCKERHUB_TOKEN }}
-    - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2
-    - name: Build dry
-      uses: docker/build-push-action@v4 # https://github.com/docker/build-push-action
-      with:
-        context: .
-        file: Dockerfile
-        platforms: ${{ matrix.docker_image.platform }}
-        tags: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}:latest
-        no-cache: false
-        push: false
-    - name: Build and push
-      uses: docker/build-push-action@v4 # https://github.com/docker/build-push-action
-      with:
-        context: .
-        file: Dockerfile
-        platforms: ${{ matrix.docker_image.platform }}
-        tags: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}:latest
-        no-cache: false
-        push: true
 
 ```
 
