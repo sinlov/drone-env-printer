@@ -42,9 +42,9 @@ jobs:
       env:
         PLUGIN_ENV_PRINTER_PADDING_LEFT_MAX: ${{ secrets.PLUGIN_ENV_PRINTER_PADDING_LEFT_MAX }}
 
-#    - name: Codecov
-#      uses: codecov/codecov-action@v3.1.1
-#      with:
-#        token: ${{secrets.CODECOV_TOKEN}}
-#        files: coverage.txt
-##        verbose: true
+    - name: Codecov
+      uses: codecov/codecov-action@v3.1.1
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        files: coverage.txt
+#        verbose: true

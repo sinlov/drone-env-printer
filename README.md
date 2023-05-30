@@ -9,7 +9,7 @@
 
 ## for what
 
-- this project used to drone CI
+- used to drone CI print env
 
 ## Pipeline Settings (.drone.yml)
 
@@ -40,6 +40,16 @@ steps:
         - GOPATH
         - GOBIN
       env_printer_padding_left_max: 42
+    when:
+      event: # https://docs.drone.io/pipeline/exec/syntax/conditions/#by-event
+        - promote
+        - rollback
+        - push
+        - pull_request
+        - tag
+      status: # only support failure/success,  both open will send anything
+        - failure
+        - success
 ```
 - `1.x` drone-exec only support env
 
