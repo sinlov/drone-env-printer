@@ -31,6 +31,9 @@ jobs:
       uses: docker/metadata-action@v4
       with:
         images: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}
+        tags: |
+          # set latest tag for main branch
+          type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', 'main') }}
     - name: Set up QEMU
       uses: docker/setup-qemu-action@v2
     - name: "Login into registry as user: env.DOCKER_HUB_USER"
@@ -47,7 +50,6 @@ jobs:
         file: Dockerfile
         platforms: ${{ matrix.docker_image.platform }}
         outputs: type=image,name=${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }},name-canonical=true
-        tags: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}:latest
         no-cache: false
         push: false
     - name: Build and push
@@ -56,8 +58,7 @@ jobs:
         context: .
         file: Dockerfile
         platforms: ${{ matrix.docker_image.platform }}
-        outputs: type=image,name=${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }},push-by-digest=true,name-canonical=true
-        tags: ${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }}:latest
+        outputs: type=image,name=${{ env.DOCKER_HUB_USER }}/${{ env.IMAGE_NAME }},name-canonical=true
         no-cache: false
         push: true
     - name: Export digest
