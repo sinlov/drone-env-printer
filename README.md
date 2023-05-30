@@ -54,6 +54,19 @@ steps:
       PLUGIN_DEBUG: false
       PLUGIN_ENV_PRINTER_PRINT_KEYS: "GOPATH,GOBIN"
       PLUGIN_ENV_PRINTER_PADDING_LEFT_MAX: 42
+    commands:
+      - ${EXEC_DRONE_ENV_PRINTER_PLUGIN_FULL_PATH} `
+        ""
+    when:
+      event: # https://docs.drone.io/pipeline/exec/syntax/conditions/#by-event
+        - promote
+        - rollback
+        - push
+        - pull_request
+        - tag
+      status: # only support failure/success,  both open will send anything
+        - failure
+        - success
 ```
 
 # Features
