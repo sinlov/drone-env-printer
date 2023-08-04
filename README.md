@@ -1,15 +1,32 @@
-[![go-ubuntu](https://github.com/sinlov/drone-env-printer/workflows/go-ubuntu/badge.svg?branch=main)](https://github.com/sinlov/drone-env-printer/actions)
-[![GoDoc](https://godoc.org/github.com/sinlov/drone-env-printer?status.png)](https://godoc.org/github.com/sinlov/drone-env-printer/)
-[![GoReportCard](https://goreportcard.com/badge/github.com/sinlov/drone-env-printer)](https://goreportcard.com/report/github.com/sinlov/drone-env-printer)
+[![go mod version](https://img.shields.io/github/go-mod/go-version/sinlov/drone-env-printer?label=go.mod)](https://github.com/sinlov/drone-env-printer)
+[![GoDoc](https://godoc.org/github.com/sinlov/drone-env-printer?status.png)](https://godoc.org/github.com/sinlov/drone-env-printer)
+[![goreportcard](https://goreportcard.com/badge/github.com/sinlov/drone-env-printer)](https://goreportcard.com/report/github.com/sinlov/drone-env-printer)
+
+[![docker hub version semver](https://img.shields.io/docker/v/sinlov/drone-env-printer?sort=semver)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
+[![docker hub image size](https://img.shields.io/docker/image-size/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer)
+[![docker hub image pulls](https://img.shields.io/docker/pulls/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
+
+[![ci](https://github.com/sinlov/drone-env-printer/workflows/ci/badge.svg)](https://github.com/sinlov/drone-env-printer/actions/workflows/ci.yml)
+
+[![GitHub license](https://img.shields.io/github/license/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer)
 [![codecov](https://codecov.io/gh/sinlov/drone-env-printer/branch/main/graph/badge.svg)](https://codecov.io/gh/sinlov/drone-env-printer)
-[![docker version semver](https://img.shields.io/docker/v/sinlov/drone-env-printer?sort=semver)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
-[![docker image size](https://img.shields.io/docker/image-size/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer)
-[![docker pulls](https://img.shields.io/docker/pulls/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
-[![github release](https://img.shields.io/github/v/release/sinlov/drone-env-printer?style=social)](https://github.com/sinlov/drone-env-printer/releases)
+[![GitHub latest SemVer tag)](https://img.shields.io/github/v/tag/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer/tags)
+[![GitHub release)](https://img.shields.io/github/v/release/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer/releases)
 
 ## for what
 
 - used to drone CI print env
+
+## Contributing
+
+[![Contributor Covenant](https://img.shields.io/badge/contributor%20covenant-v1.4-ff69b4.svg)](.github/CONTRIBUTING_DOC/CODE_OF_CONDUCT.md)
+[![GitHub contributors](https://img.shields.io/github/contributors/bridgewwater/drone-plugin-temple)](https://github.com/bridgewwater/drone-plugin-temple/graphs/contributors)
+
+We welcome community contributions to this project.
+
+Please read [Contributor Guide](.github/CONTRIBUTING_DOC/CONTRIBUTING.md) for more information on how to get started.
+
+请阅读有关 [贡献者指南](.github/CONTRIBUTING_DOC/zh-CN/CONTRIBUTING.md) 以获取更多如何入门的信息## Features
 
 ## Pipeline Settings (.drone.yml)
 
@@ -18,7 +35,7 @@
 ```yaml
 steps:
   - name: drone-env-printer
-    image: sinlov/drone-env-printer:latest
+    image: sinlov/drone-env-printer:1.2.0
     pull: if-not-exists
     settings:
       debug: false
