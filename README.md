@@ -1,3 +1,5 @@
+[![ci](https://github.com/sinlov/drone-env-printer/workflows/ci/badge.svg)](https://github.com/sinlov/drone-env-printer/actions/workflows/ci.yml)
+
 [![go mod version](https://img.shields.io/github/go-mod/go-version/sinlov/drone-env-printer?label=go.mod)](https://github.com/sinlov/drone-env-printer)
 [![GoDoc](https://godoc.org/github.com/sinlov/drone-env-printer?status.png)](https://godoc.org/github.com/sinlov/drone-env-printer)
 [![goreportcard](https://goreportcard.com/badge/github.com/sinlov/drone-env-printer)](https://goreportcard.com/report/github.com/sinlov/drone-env-printer)
@@ -5,8 +7,6 @@
 [![docker hub version semver](https://img.shields.io/docker/v/sinlov/drone-env-printer?sort=semver)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
 [![docker hub image size](https://img.shields.io/docker/image-size/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer)
 [![docker hub image pulls](https://img.shields.io/docker/pulls/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
-
-[![ci](https://github.com/sinlov/drone-env-printer/workflows/ci/badge.svg)](https://github.com/sinlov/drone-env-printer/actions/workflows/ci.yml)
 
 [![GitHub license](https://img.shields.io/github/license/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer)
 [![codecov](https://codecov.io/gh/sinlov/drone-env-printer/branch/main/graph/badge.svg)](https://codecov.io/gh/sinlov/drone-env-printer)
