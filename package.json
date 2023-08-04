@@ -1,5 +1,28 @@
 {
   "name": "drone-env-printer",
   "version": "1.1.0",
-  "dependencies": {}
+  "description": "drone env printer",
+  "directories": {
+    "doc": "doc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/sinlov/drone-env-printer.git"
+  },
+  "keywords": [
+    "go",
+    "drone",
+    "docker",
+    "devops"
+  ],
+  "author": {
+    "name": "sinlov",
+    "email": "sinlovgmppt@gmail.com",
+    "url": "https://github.com/sinlov/drone-env-printer"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/sinlov/drone-env-printer/issues"
+  },
+  "homepage": "https://github.com/sinlov/drone-env-printer#readme"
 }

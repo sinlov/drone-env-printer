@@ -28,6 +28,7 @@ func TestPlugin(t *testing.T) {
 	//if nil == err {
 	//	t.Fatal("args [ webhook ] empty error should be catch!")
 	//}
+
 	p.Config.PaddingLeftMax = 36
 	p.Config.EnvPrintKeys = []string{
 		"GOPATH",

@@ -5,12 +5,16 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/sinlov/drone-info-tools/drone_info"
+	"github.com/sinlov/drone-info-tools/drone_log"
 	"github.com/sinlov/drone-info-tools/template"
 	"io/fs"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"runtime"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -20,19 +24,35 @@ const (
 	defTimeoutFileSecond = 30
 	mockVersion          = "v0.0.0"
 	mockName             = "drone-env-printer"
+	keyEnvCiKeys         = "CI_KEYS"
+	keyPluginWebhook     = "PLUGIN_WEBHOOK"
 )
 
 var (
-	envDebug    = false
-	envUserName = ""
-	envPassword = ""
+	envDebug = false
+
+	envEnvKeys []string
+	strData    []string
 
 	envPluginEnvPrinterPaddingLeftMax = ""
 )
 
 func envCheck(t *testing.T) bool {
+
+	if envDebug {
+		drone_log.ShowLogLineNo(true)
+		drone_log.OpenDebug()
+	}
+
+	// most CI system will set env CI to true
+	envCI := fetchOsEnvBool("CI", false)
+	if !envCI {
+		t.Logf("not in CI system, skip envCheck")
+		return false
+	}
+	t.Logf("check env for CI system")
 	mustSetEnvList := []string{
-		//"PLUGIN_WEBHOOK",
+		keyPluginWebhook,
 	}
 	for _, item := range mustSetEnvList {
 		if os.Getenv(item) == "" {
@@ -46,18 +66,127 @@ func envCheck(t *testing.T) bool {
 
 func init() {
 	template.RegisterSettings(template.DefaultFunctions)
-	envDebug = os.Getenv("ENV_DEBUG") == "true"
+	envDebug = fetchOsEnvBool(drone_info.EnvKeyPluginDebug, false) || fetchOsEnvBool(drone_info.EnvDroneBuildDebug, false)
 
-	envUserName = os.Getenv("ENV_PLUGIN_USERNAME")
-	envPassword = os.Getenv("ENV_PLUGIN_PASSWORD")
+	envEnvKeys = fetchOsEnvArray(keyEnvCiKeys)
+	for i := 0; i < 200; i++ {
+		strData = append(strData, randomStr(300))
+	}
 
 	envPluginEnvPrinterPaddingLeftMax = os.Getenv("PLUGIN_ENV_PRINTER_PADDING_LEFT_MAX")
 }
 
 // test case file tools start
 
+// goldenDataSaveFast
+//
+//	save data to golden file
+//	style as: "TestFuncName/extraName.golden"
+func goldenDataSaveFast(t *testing.T, data interface{}, extraName string) error {
+	marshal, errJson := json.Marshal(data)
+	if errJson != nil {
+		t.Fatal(errJson)
+	}
+	return goldenDataSave(t, marshal, extraName, os.FileMode(0766))
+}
+
+// goldenDataSave
+//
+//	save data to golden file
+//	style as: "TestFuncName/extraName.golden"
+func goldenDataSave(t *testing.T, data []byte, extraName string, fileMod fs.FileMode) error {
+	testDataFolderFullPath, err := getOrCreateTestDataFolderFullPath()
+	if err != nil {
+		return fmt.Errorf("try goldenDataSave err: %v", err)
+	}
+	testDataFolder := filepath.Join(testDataFolderFullPath, t.Name())
+	if !pathExistsFast(testDataFolder) {
+		errMk := mkdir(testDataFolder)
+		if errMk != nil {
+			t.Fatal(errMk)
+		}
+	}
+	savePath := filepath.Join(testDataFolderFullPath, t.Name(), fmt.Sprintf("%s.golden", extraName))
+	var str bytes.Buffer
+	err = json.Indent(&str, data, "", "  ")
+	if err != nil {
+		return err
+	}
+	err = writeFileByByte(savePath, str.Bytes(), fileMod, true)
+	if err != nil {
+		return fmt.Errorf("try goldenDataSave at path: %s err: %v", savePath, err)
+	}
+	return nil
+}
+
+// goldenDataReadAsByte
+//
+//	read golden file as byte
+//	style as: "TestFuncName/extraName.golden"
+func goldenDataReadAsByte(t *testing.T, extraName string) ([]byte, error) {
+	testDataFolderFullPath, err := getOrCreateTestDataFolderFullPath()
+	if err != nil {
+		return nil, fmt.Errorf("try goldenDataReadAsByte err: %v", err)
+	}
+
+	savePath := filepath.Join(testDataFolderFullPath, t.Name(), fmt.Sprintf("%s.golden", extraName))
+
+	fileAsByte, err := readFileAsByte(savePath)
+	if err != nil {
+		return nil, fmt.Errorf("try goldenDataReadAsByte err: %v", err)
+	}
+	return fileAsByte, nil
+}
+
+// goldenDataReadAsType
+//
+//	read golden file as type
+//	style as: "TestFuncName/extraName.golden"
+func goldenDataReadAsType(t *testing.T, extraName string, v interface{}) error {
+	readAsByte, err := goldenDataReadAsByte(t, extraName)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return json.Unmarshal(readAsByte, v)
+}
+
 var currentTestDataFolderAbsPath = ""
 
+// getOrCreateTestDataFullPath
+//
+//	get or create test data full path will under this package testdata
+//	this function will create dir for return full path
+func getOrCreateTestDataFullPath(elem ...string) (string, error) {
+	if elem == nil || len(elem) < 1 {
+		return "", fmt.Errorf("must has one elem")
+	}
+	dataFolderFullPath, err := getOrCreateTestDataFolderFullPath()
+	if err != nil {
+		return "", err
+	}
+	fullPath := filepath.Join(dataFolderFullPath, elem[0])
+	if len(elem) > 1 {
+		for i := 1; i < len(elem); i++ {
+			fullPath = filepath.Join(fullPath, elem[i])
+		}
+	}
+	baseDir := filepath.Dir(fullPath)
+	if !pathExistsFast(baseDir) {
+		errMkdir := mkdir(baseDir)
+		if errMkdir != nil {
+			return fullPath, errMkdir
+		}
+	}
+	if !pathIsDir(baseDir) {
+		return "", fmt.Errorf("getOrCreateTestDataFullPath exist file, and can not create dir at path: %s", baseDir)
+	}
+
+	return fullPath, nil
+}
+
+// getOrCreateTestDataFolderFullPath
+//
+//	will create testdata folder under this package
 func getOrCreateTestDataFolderFullPath() (string, error) {
 	if currentTestDataFolderAbsPath != "" {
 		return currentTestDataFolderAbsPath, nil
@@ -77,39 +206,9 @@ func getOrCreateTestDataFolderFullPath() (string, error) {
 	return currentTestDataFolderAbsPath, nil
 }
 
-func goldenDataSaveFast(t *testing.T, data []byte, extraName string) error {
-	return goldenDataSave(t, data, extraName, os.FileMode(0766))
-}
-
-func goldenDataSave(t *testing.T, data []byte, extraName string, fileMod fs.FileMode) error {
-	testDataFolderFullPath, err := getOrCreateTestDataFolderFullPath()
-	if err != nil {
-		return fmt.Errorf("try goldenDataSave err: %v", err)
-	}
-	savePath := filepath.Join(testDataFolderFullPath, fmt.Sprintf("%s-%s.golden", t.Name(), extraName))
-	err = writeFileByByte(savePath, data, fileMod, true)
-	if err != nil {
-		return fmt.Errorf("try goldenDataSave at path: %s err: %v", savePath, err)
-	}
-	return nil
-}
-
-func goldenDataReadAsByte(t *testing.T, extraName string) ([]byte, error) {
-	testDataFolderFullPath, err := getOrCreateTestDataFolderFullPath()
-	if err != nil {
-		return nil, fmt.Errorf("try goldenDataReadAsByte err: %v", err)
-	}
-
-	savePath := filepath.Join(testDataFolderFullPath, fmt.Sprintf("%s-%s.golden", t.Name(), extraName))
-
-	fileAsByte, err := readFileAsByte(savePath)
-	if err != nil {
-		return nil, fmt.Errorf("try goldenDataReadAsByte err: %v", err)
-	}
-	return fileAsByte, nil
-}
-
-// getCurrentFolderPath can get run path this golang dir
+// getCurrentFolderPath
+//
+//	can get run path this golang dir
 func getCurrentFolderPath() (string, error) {
 	_, file, _, ok := runtime.Caller(1)
 	if !ok {
@@ -118,7 +217,9 @@ func getCurrentFolderPath() (string, error) {
 	return filepath.Dir(file), nil
 }
 
-// pathExists path exists
+// pathExists
+//
+//	path exists
 func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
@@ -130,13 +231,30 @@ func pathExists(path string) (bool, error) {
 	return false, err
 }
 
-// pathExistsFast path exists fast
+// pathExistsFast
+//
+//	path exists fast
 func pathExistsFast(path string) bool {
 	exists, _ := pathExists(path)
 	return exists
 }
 
-// rmDir remove dir by path
+// pathIsDir
+//
+//	path is dir
+func pathIsDir(path string) bool {
+	s, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return s.IsDir()
+}
+
+// rmDir
+//
+//	remove dir by path
+//
+//nolint:golint,unused
 func rmDir(path string, force bool) error {
 	if force {
 		return os.RemoveAll(path)
@@ -151,7 +269,9 @@ func rmDir(path string, force bool) error {
 	return fmt.Errorf("remove dir not exist path: %s , use force can cover this err", path)
 }
 
-// mkdir will use FileMode 0766
+// mkdir
+//
+//	will use FileMode 0766
 func mkdir(path string) error {
 	err := os.MkdirAll(path, os.FileMode(0766))
 	if err != nil {
@@ -160,7 +280,9 @@ func mkdir(path string) error {
 	return nil
 }
 
-// readFileAsByte read file as byte array
+// readFileAsByte
+//
+//	read file as byte array
 func readFileAsByte(path string) ([]byte, error) {
 	exists, err := pathExists(path)
 	if err != nil {
@@ -177,7 +299,9 @@ func readFileAsByte(path string) ([]byte, error) {
 	return data, nil
 }
 
-// readFileAsJson read file as json
+// readFileAsJson
+//
+//	read file as json
 func readFileAsJson(path string, v interface{}) error {
 	fileAsByte, err := readFileAsByte(path)
 	err = json.Unmarshal(fileAsByte, v)
@@ -187,11 +311,13 @@ func readFileAsJson(path string, v interface{}) error {
 	return nil
 }
 
-// writeFileByByte write bytes to file
-// path most use Abs Path
-// data []byte
-// fileMod os.FileMode(0666) or os.FileMode(0644)
-// coverage true will coverage old
+// writeFileByByte
+//
+//	write bytes to file
+//	path most use Abs Path
+//	data []byte
+//	fileMod os.FileMode(0666) or os.FileMode(0644)
+//	coverage true will coverage old
 func writeFileByByte(path string, data []byte, fileMod fs.FileMode, coverage bool) error {
 	if !coverage {
 		exists, err := pathExists(path)
@@ -217,11 +343,12 @@ func writeFileByByte(path string, data []byte, fileMod fs.FileMode, coverage boo
 }
 
 // writeFileAsJson write json file
-// path most use Abs Path
-// v data
-// fileMod os.FileMode(0666) or os.FileMode(0644)
-// coverage true will coverage old
-// beauty will format json when write
+//
+//	path most use Abs Path
+//	v data
+//	fileMod os.FileMode(0666) or os.FileMode(0644)
+//	coverage true will coverage old
+//	beauty will format json when write
 func writeFileAsJson(path string, v interface{}, fileMod fs.FileMode, coverage, beauty bool) error {
 	if !coverage {
 		exists, err := pathExists(path)
@@ -247,13 +374,128 @@ func writeFileAsJson(path string, v interface{}, fileMod fs.FileMode, coverage, 
 	return writeFileByByte(path, data, fileMod, coverage)
 }
 
-// writeFileAsJsonBeauty write json file as 0766 and beauty
+// writeFileAsJsonBeauty
+//
+//	write json file as 0766 and beauty
 func writeFileAsJsonBeauty(path string, v interface{}, coverage bool) error {
 	return writeFileAsJson(path, v, os.FileMode(0766), coverage, true)
 }
 
+// fetchOsEnvBool
+//
+//	fetch os env by key.
+//	if not found will return devValue.
+//	return env not same as true (will be lowercase, so TRUE is same)
+func fetchOsEnvBool(key string, devValue bool) bool {
+	if os.Getenv(key) == "" {
+		return devValue
+	}
+	return strings.ToLower(os.Getenv(key)) == "true"
+}
+
+// fetchOsEnvInt
+//
+//	fetch os env by key.
+//	return not found will return devValue.
+//	if not parse to int, return devValue
+func fetchOsEnvInt(key string, devValue int) int {
+	if os.Getenv(key) == "" {
+		return devValue
+	}
+	outNum, err := strconv.Atoi(os.Getenv(key))
+	if err != nil {
+		return devValue
+	}
+
+	return outNum
+}
+
+// fetchOsEnvStr
+//
+//	fetch os env by key.
+//	return not found will return devValue.
+func fetchOsEnvStr(key, devValue string) string {
+	if os.Getenv(key) == "" {
+		return devValue
+	}
+	return os.Getenv(key)
+}
+
+// fetchOsEnvInt
+//
+//	fetch os env split by `,` and trim space
+//	return not found will return []string(nil).
+func fetchOsEnvArray(key string) []string {
+	var devValueStr []string
+	if os.Getenv(key) == "" {
+		return devValueStr
+	}
+	envValue := os.Getenv(key)
+	splitVal := strings.Split(envValue, ",")
+	if len(splitVal) == 0 {
+		return devValueStr
+	}
+	for _, item := range splitVal {
+		devValueStr = append(devValueStr, strings.TrimSpace(item))
+	}
+
+	return devValueStr
+}
+
+// setEnvStr
+//
+//	set env by key and val
+func setEnvStr(t *testing.T, key string, val string) {
+	err := os.Setenv(key, val)
+	if err != nil {
+		t.Fatalf("set env key [%v] string err: %v", key, err)
+	}
+}
+
+// setEnvBool
+//
+//	set env by key and val
+//
+//nolint:golint,unused
+func setEnvBool(t *testing.T, key string, val bool) {
+	var err error
+	if val {
+		err = os.Setenv(key, "true")
+	} else {
+		err = os.Setenv(key, "false")
+	}
+	if err != nil {
+		t.Fatalf("set env key [%v] bool err: %v", key, err)
+	}
+}
+
+// setEnvU64
+//
+//	set env by key and val
+//
+//nolint:golint,unused
+func setEnvU64(t *testing.T, key string, val uint64) {
+	err := os.Setenv(key, strconv.FormatUint(val, 10))
+	if err != nil {
+		t.Fatalf("set env key [%v] uint64 err: %v", key, err)
+	}
+}
+
+// setEnvInt64
+//
+//	set env by key and val
+//
+//nolint:golint,unused
+func setEnvInt64(t *testing.T, key string, val int64) {
+	err := os.Setenv(key, strconv.FormatInt(val, 10))
+	if err != nil {
+		t.Fatalf("set env key [%v] int64 err: %v", key, err)
+	}
+}
+
 // randomStr
-// new random string by cnt
+//
+//	new random string by cnt
 func randomStr(cnt uint) string {
 	var letters = []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 	result := make([]byte, cnt)
@@ -266,7 +508,8 @@ func randomStr(cnt uint) string {
 }
 
 // randomInt
-// new random int by max
+//
+//	new random int by max
 func randomInt(max int) int {
 	rand.Seed(time.Now().Unix())
 	return rand.Intn(max)

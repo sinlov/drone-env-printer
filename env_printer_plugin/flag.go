@@ -2,23 +2,44 @@ package env_printer_plugin
 
 import (
 	"github.com/sinlov/drone-info-tools/drone_info"
+	"github.com/sinlov/drone-info-tools/drone_log"
 	"github.com/urfave/cli/v2"
 	"log"
+	"os"
 )
 
-func BindCliFlag(c *cli.Context, cliVersion, cliName string, drone drone_info.Drone) Plugin {
+// IsBuildDebugOpen
+// when config or drone build open debug will open debug
+func IsBuildDebugOpen(c *cli.Context) bool {
+	return c.Bool(NamePluginDebug) || c.Bool(drone_info.NameCliStepsDebug)
+}
+
+// BindCliFlag
+// check args here
+func BindCliFlag(c *cli.Context, cliVersion, cliName string, drone drone_info.Drone) (*Plugin, error) {
+	debug := IsBuildDebugOpen(c)
+
 	config := Config{
-		EnvPrintKeys:   c.StringSlice("config.env_printer_print_keys"),
-		PaddingLeftMax: c.Int("config.env_printer_padding_left_max"),
+		Debug:         debug,
+		TimeoutSecond: c.Uint(NamePluginTimeOut),
 
-		Debug: c.Bool("config.debug"),
-
-		TimeoutSecond: c.Uint("config.timeout_second"),
+		EnvPrintKeys:   c.StringSlice(NamePrinterPrintKeys),
+		PaddingLeftMax: c.Int(NamePrinterPaddingLeftMax),
 	}
 
 	if config.Debug {
-		log.Printf("config.timeout_second: %v", config.TimeoutSecond)
+		drone_log.ShowLogLineNo(true)
+		for _, e := range os.Environ() {
+			log.Println(e)
+		}
 	}
+
+	// set default TimeoutSecond
+	if config.TimeoutSecond == 0 {
+		config.TimeoutSecond = 10
+	}
+
+	drone_log.Debugf("args %s: %v", NamePluginTimeOut, config.TimeoutSecond)
 
 	p := Plugin{
 		Name:    cliName,
@@ -26,7 +47,7 @@ func BindCliFlag(c *cli.Context, cliVersion, cliName string, drone drone_info.Dr
 		Drone:   drone,
 		Config:  config,
 	}
-	return p
+	return &p, nil
 }
 
 // Flag
@@ -36,14 +57,14 @@ func Flag() []cli.Flag {
 		// env_printer_plugin start
 		// new flag string template if no use, please replace this
 		&cli.StringSliceFlag{
-			Name:    "config.env_printer_print_keys,env_printer_print_keys",
+			Name:    NamePrinterPrintKeys,
 			Usage:   "if use this args, will print env by keys",
-			EnvVars: []string{"PLUGIN_ENV_PRINTER_PRINT_KEYS"},
+			EnvVars: []string{EnvPrinterPrintKeys},
 		},
 		&cli.IntFlag{
-			Name:    "config.env_printer_padding_left_max,env_printer_padding_left_max",
+			Name:    NamePrinterPaddingLeftMax,
 			Usage:   "set env printer padding left max count, minimum 24, default 32",
-			EnvVars: []string{"PLUGIN_ENV_PRINTER_PADDING_LEFT_MAX"},
+			EnvVars: []string{EnvPrinterPaddingLeftMax},
 			Value:   32,
 		},
 		// env_printer_plugin end
@@ -75,17 +96,17 @@ func HideFlag() []cli.Flag {
 func CommonFlag() []cli.Flag {
 	return []cli.Flag{
 		&cli.UintFlag{
-			Name:    "config.timeout_second,timeout_second",
+			Name:    NamePluginTimeOut,
 			Usage:   "do request timeout setting second.",
 			Hidden:  true,
 			Value:   10,
-			EnvVars: []string{"PLUGIN_TIMEOUT_SECOND"},
+			EnvVars: []string{EnvPluginTimeOut},
 		},
 		&cli.BoolFlag{
-			Name:    "config.debug,debug",
+			Name:    NamePluginDebug,
 			Usage:   "debug mode",
 			Value:   false,
-			EnvVars: []string{"PLUGIN_DEBUG"},
+			EnvVars: []string{drone_info.EnvKeyPluginDebug},
 		},
 	}
 }

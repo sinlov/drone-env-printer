@@ -33,20 +33,8 @@ func (p *Plugin) CleanResultEnv() error {
 
 func (p *Plugin) Exec() error {
 
-	//log.Printf("=> %s version %s start", p.Name, p.Version)
-
-	if p.Config.Debug {
-		for _, e := range os.Environ() {
-			log.Println(e)
-		}
-	}
-
 	var err error
 
-	// set default TimeoutSecond
-	if p.Config.TimeoutSecond == 0 {
-		p.Config.TimeoutSecond = 10
-	}
 	if p.Config.PaddingLeftMax < 24 {
 		p.Config.PaddingLeftMax = 24
 	}
@@ -54,23 +42,23 @@ func (p *Plugin) Exec() error {
 	var sb strings.Builder
 	_, _ = fmt.Fprint(&sb, "-> just print basic env:\n")
 	paddingMax := strconv.Itoa(p.Config.PaddingLeftMax)
-	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageMachine, p.Drone.Stage.Machine))
-	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageOs, p.Drone.Stage.Os))
-	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageArch, p.Drone.Stage.Arch))
-	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoName, p.Drone.Repo.ShortName))
-	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoOwner, p.Drone.Repo.OwnerName))
-	_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepo, p.Drone.Repo.FullName))
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageMachine, p.Drone.Stage.Machine)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageOs, p.Drone.Stage.Os)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageArch, p.Drone.Stage.Arch)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoName, p.Drone.Repo.ShortName)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoOwner, p.Drone.Repo.OwnerName)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepo, p.Drone.Repo.FullName)
 	if p.Drone.Commit.Branch != "" {
-		_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitBranch, p.Drone.Commit.Branch))
+		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitBranch, p.Drone.Commit.Branch)
 	}
 	if p.Drone.Build.Tag != "" {
-		_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", drone_info.EnvDroneTag, p.Drone.Build.Tag))
+		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneTag, p.Drone.Build.Tag)
 	}
 
 	if len(p.Config.EnvPrintKeys) > 0 {
 		_, _ = fmt.Fprint(&sb, "-> start print keys env:\n")
 		for _, key := range p.Config.EnvPrintKeys {
-			_, _ = fmt.Fprint(&sb, fmt.Sprintf("%-"+paddingMax+"s %s\n", key, os.Getenv(key)))
+			_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", key, os.Getenv(key))
 		}
 		_, _ = fmt.Fprint(&sb, "-> end print keys env\n")
 	}
@@ -86,6 +74,8 @@ func (p *Plugin) Exec() error {
 
 // randomStr
 // new random string by cnt
+//
+//nolint:golint,unused
 func randomStr(cnt uint) string {
 	var letters = []byte("0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz")
 	result := make([]byte, cnt)
@@ -99,6 +89,8 @@ func randomStr(cnt uint) string {
 
 // randomStr
 // new random string by cnt
+//
+//nolint:golint,unused
 func randomStrBySed(cnt uint, sed string) string {
 	var letters = []byte(sed)
 	result := make([]byte, cnt)
@@ -110,6 +102,7 @@ func randomStrBySed(cnt uint, sed string) string {
 	return string(result)
 }
 
+//nolint:golint,unused
 func setEnvFromStr(key string, val string) {
 	err := os.Setenv(key, val)
 	if err != nil {
