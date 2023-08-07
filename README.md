@@ -35,7 +35,7 @@ Please read [Contributor Guide](.github/CONTRIBUTING_DOC/CONTRIBUTING.md) for mo
 ```yaml
 steps:
   - name: drone-env-printer
-    image: sinlov/drone-env-printer:1.2.0
+    image: sinlov/drone-env-printer:1.3.0
     pull: if-not-exists
     settings:
       debug: false
