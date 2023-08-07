@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [convention-change-log](https://github.com/convention-change/convention-change-log) for commit guidelines.
 
+## [1.3.0](https://github.com/sinlov/drone-env-printer/compare/1.2.0...v1.3.0) (2023-08-07)
+
+### ✨ Features
+
+* let show more info at different drone build event ([5e8f4d03](https://github.com/sinlov/drone-env-printer/commit/5e8f4d03c73aeeea8d87571a9fdd3430eb94a5d5))
+
 ## [1.2.0](https://github.com/sinlov/drone-env-printer/compare/1.1.0...v1.2.0) (2023-08-05)
 
 ### ✨ Features
