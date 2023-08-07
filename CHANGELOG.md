@@ -2,6 +2,12 @@
 
 All notable changes to this project will be documented in this file. See [convention-change-log](https://github.com/convention-change/convention-change-log) for commit guidelines.
 
+## [1.3.1](https://github.com/sinlov/drone-env-printer/compare/1.3.0...v1.3.1) (2023-08-07)
+
+### 👷‍ Build System
+
+* github.com/sinlov/drone-info-tools v1.31.0 ([b7234299](https://github.com/sinlov/drone-env-printer/commit/b72342996dd594c8c6e0f92da23769793f15d587))
+
 ## [1.3.0](https://github.com/sinlov/drone-env-printer/compare/1.2.0...v1.3.0) (2023-08-07)
 
 ### ✨ Features
