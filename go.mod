@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/joho/godotenv v1.5.1
-	github.com/sinlov/drone-info-tools v1.30.0
+	github.com/sinlov/drone-info-tools v1.31.0
 	github.com/stretchr/testify v1.8.4
 	github.com/urfave/cli/v2 v2.25.7
 )
