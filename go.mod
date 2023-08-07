@@ -1,6 +1,6 @@
 module github.com/sinlov/drone-env-printer
 
-go 1.18
+go 1.19
 
 require (
 	github.com/joho/godotenv v1.5.1
