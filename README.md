@@ -9,7 +9,6 @@
 [![docker hub image pulls](https://img.shields.io/docker/pulls/sinlov/drone-env-printer)](https://hub.docker.com/r/sinlov/drone-env-printer/tags?page=1&ordering=last_updated)
 
 [![GitHub license](https://img.shields.io/github/license/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer)
-[![codecov](https://codecov.io/gh/sinlov/drone-env-printer/branch/main/graph/badge.svg)](https://codecov.io/gh/sinlov/drone-env-printer)
 [![GitHub latest SemVer tag)](https://img.shields.io/github/v/tag/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer/tags)
 [![GitHub release)](https://img.shields.io/github/v/release/sinlov/drone-env-printer)](https://github.com/sinlov/drone-env-printer/releases)
 
