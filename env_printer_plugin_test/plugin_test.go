@@ -1,4 +1,4 @@
-package plugin_test
+package env_printer_plugin_test
 
 import (
 	"github.com/sinlov/drone-env-printer/env_printer_plugin"

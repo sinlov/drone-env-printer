@@ -42,18 +42,37 @@ func (p *Plugin) Exec() error {
 	var sb strings.Builder
 	_, _ = fmt.Fprint(&sb, "-> just print basic env:\n")
 	paddingMax := strconv.Itoa(p.Config.PaddingLeftMax)
+
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneBuildTrigger, p.Drone.Build.Trigger)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageName, p.Drone.Stage.Name)
 	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageMachine, p.Drone.Stage.Machine)
 	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageOs, p.Drone.Stage.Os)
 	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageArch, p.Drone.Stage.Arch)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageType, p.Drone.Stage.Type)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneStageKind, p.Drone.Stage.Kind)
 	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoName, p.Drone.Repo.ShortName)
 	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoOwner, p.Drone.Repo.OwnerName)
 	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepo, p.Drone.Repo.FullName)
-	if p.Drone.Commit.Branch != "" {
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneRepoBranch, p.Drone.Build.RepoBranch)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitRef, p.Drone.Commit.Ref)
+
+	_, _ = fmt.Fprintf(&sb, "\n")
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneBuildEvent, p.Drone.Build.Event)
+	switch p.Drone.Build.Event {
+	default:
+		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitBranch, p.Drone.Commit.Branch)
+	case "tag":
+		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneTag, p.Drone.Build.Tag)
+	case "pull_request":
+		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneSourceBranch, p.Drone.Build.SourceBranch)
+		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneTargetBranch, p.Drone.Build.TargetBranch)
+	case "push":
 		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitBranch, p.Drone.Commit.Branch)
 	}
-	if p.Drone.Build.Tag != "" {
-		_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneTag, p.Drone.Build.Tag)
-	}
+	_, _ = fmt.Fprintf(&sb, "\n")
+
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneBuildLink, p.Drone.Build.Link)
+	_, _ = fmt.Fprintf(&sb, "%-"+paddingMax+"s %s\n", drone_info.EnvDroneCommitLink, p.Drone.Commit.Link)
 
 	if len(p.Config.EnvPrintKeys) > 0 {
 		_, _ = fmt.Fprint(&sb, "-> start print keys env:\n")
